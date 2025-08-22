@@ -1,0 +1,16 @@
+Flask==3.0.3
+autopep8==2.3.1
+pylint==3.2.6
+
+# Transitive/runtime utilities
+tomlkit==0.13.2
+isort==5.13.2
+autoflake==2.3.1
+black==24.8.0
+flake8==7.1.1
+
+# Optional/analysis extras
+radon==6.0.1
+# Optional LLM suggestions (used only if OPENAI_API_KEY is set)
+openai==0.28
+google-generativeai>=0.4.1
