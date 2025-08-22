@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Code Analyzer & Teacher</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="https://unpkg.com/prismjs@1.29.0/themes/prism-tomorrow.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+    <style>
+        body {
+            background: radial-gradient(circle at 20% 30%, #232526 0%, #414345 100%);
+            color: #f3f3f3;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .app-header {
+            background: linear-gradient(90deg, #232526 60%, #ffb347 100%);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #444;
+            animation: fadeInDown 1s;
+            box-shadow: 0 2px 12px #0008;
+        }
+        .app-header h1 {
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            color: #ffb347;
+            text-shadow: 0 0 8px #ffb34788;
+        }
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .status {
+            font-size: 1rem;
+            color: #7fff7f;
+            margin-left: 2rem;
+            text-shadow: 0 0 8px #7fff7f88;
+        }
+        .layout {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem;
+            animation: fadeInUp 1s;
+        }
+        .input-panel, .results-panel, .teaching-panel {
+            background: #2c2c2c;
+            border-radius: 1rem;
+            box-shadow: 0 4px 24px #0006;
+            padding: 2rem;
+        }
+        .input-panel {
+            flex: 1;
+            min-width: 340px;
+        }
+        .results-panel {
+            flex: 2;
+            min-width: 400px;
+        }
+        .teaching-panel {
+            flex: 1;
+            min-width: 320px;
+            margin-left: 0.5rem;
+            background: linear-gradient(135deg, #232526 60%, #ffb34722 100%);
+            border: 2px solid #ffb347;
+            box-shadow: 0 0 24px #ffb34744;
+            animation: fadeInRight 1s;
+        }
+        .input-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+        .input-controls button, .input-controls label {
+            background: linear-gradient(90deg, #ffb347 60%, #7fff7f 100%);
+            color: #232526;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 8px #ffb34744;
+        }
+        .input-controls button:hover, .input-controls label:hover {
+            background: #ffcc80;
+            box-shadow: 0 0 16px #ffb34788;
+        }
+        textarea#code {
+            width: 100%;
+            height: 180px;
+            border-radius: 0.5rem;
+            border: 1px solid #444;
+            background: #232526;
+            color: #fff;
+            font-size: 1.1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            resize: vertical;
+            box-shadow: 0 0 8px #ffb34722;
+        }
+        .editor, .summary, .metrics, .diagnostics, .suggestions, .run-meta {
+            margin-bottom: 1rem;
+        }
+        .editor h3, .editor h4 {
+            color: #ffb347;
+            text-shadow: 0 0 8px #ffb34744;
+        }
+        .suggestions-controls button {
+            background: linear-gradient(90deg, #7fff7f 60%, #ffb347 100%);
+            color: #232526;
+            border-radius: 0.5rem;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 8px #7fff7f44;
+        }
+        .suggestions-controls button:hover {
+            background: #b2ffb2;
+            box-shadow: 0 0 16px #7fff7f88;
+        }
+        .step-explanation {
+            background: #232526;
+            border: 2px solid #ffb347;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            animation: fadeIn 1s;
+            box-shadow: 0 0 16px #ffb34722;
+        }
+        .step-explanation h2 {
+            color: #7fff7f;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 8px #7fff7f44;
+        }
+        .step-explanation ul {
+            list-style: none;
+            padding: 0;
+        }
+        .step-explanation li {
+            margin-bottom: 0.7rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+        .step-explanation li i {
+            margin-right: 0.7rem;
+            color: #ffb347;
+            text-shadow: 0 0 8px #ffb34744;
+        }
+        .run-explanation {
+            background: #2c2c2c;
+            border-left: 5px solid #7fff7f;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            animation: fadeIn 1s;
+            box-shadow: 0 0 8px #7fff7f44;
+        }
+        .teaching-panel h2 {
+            color: #ffb347;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            text-shadow: 0 0 8px #ffb34744;
+        }
+        .teaching-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .teaching-step {
+            background: #232526;
+            border-radius: 0.7rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 0 12px #ffb34722;
+            border-left: 6px solid #ffb347;
+            opacity: 0.7;
+            transition: opacity 0.3s, box-shadow 0.3s;
+        }
+        .teaching-step.active {
+            opacity: 1;
+            box-shadow: 0 0 24px #ffb34788;
+            border-left: 6px solid #7fff7f;
+            animation: pulse 1s;
+        }
+        .teaching-step i {
+            font-size: 2rem;
+            color: #ffb347;
+            text-shadow: 0 0 8px #ffb34744;
+        }
+        .teaching-step .step-text {
+            font-size: 1.1rem;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 24px #ffb34788; }
+            50% { box-shadow: 0 0 48px #7fff7f88; }
+            100% { box-shadow: 0 0 24px #ffb34788; }
+        }
+        .app-footer {
+            background: #232526;
+            color: #ffb347;
+            padding: 1rem 2rem;
+            text-align: center;
+            border-top: 2px solid #444;
+            margin-top: 2rem;
+            box-shadow: 0 -2px 12px #0008;
+        }
+        .version {
+            color: #7fff7f;
+            font-weight: bold;
+        }
+        @media (max-width: 1100px) {
+            .layout { flex-direction: column; }
+            .teaching-panel { margin-left: 0; margin-top: 2rem; }
+        }
+        .teaching-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2c2c2c;
+            border-radius: 1rem;
+            box-shadow: 0 4px 24px #0006;
+            padding: 2rem;
+            z-index: 1000;
+            display: none;
+        }
+        .teaching-popup.active {
+            display: block;
+        }
+        .teaching-popup .close-popup {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            color: #ffb347;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<header class="app-header animate__animated animate__fadeInDown">
+    <h1><i class="fa-solid fa-brain"></i> AI Code Analyzer & Teacher</h1>
+    
+    <div class="status" id="status">Ready</div>
+</header>
+
+<main class="layout animate__animated animate__fadeInUp">
+    <section class="input-panel">
+        <div class="input-controls">
+            <label class="file-upload">
+                <input id="file-input" type="file" accept=".py,.txt" style="display:none;" />
+                <span><i class="fa-solid fa-upload"></i>Upload</span>
+            </label>
+            <button id="analyze"><i class="fa-solid fa-magnifying-glass"></i> Analyze</button>
+            <button id="clear"><i class="fa-solid fa-eraser"></i> Clear</button>
+            <button id="download-report"><i class="fa-solid fa-download"></i> Download report</button>
+        </div>
+        <textarea id="code" placeholder="Paste your Python code here..."></textarea>
+    </section>
+
+
+    <section class="results-panel">
+        <div class="editor animate__animated animate__fadeIn">
+            <h3><i class="fa-solid fa-code"></i> Your Code</h3>
+            <pre class="language-python" id="original"><code class="language-python"></code></pre>
+        </div>
+
+        <div class="summary" id="summary"></div>
+        <div class="metrics" id="metrics"></div>
+        <div class="diagnostics" id="diagnostics"></div>
+
+        <div class="suggestions-controls" style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+            <button id="run-code" title="Run code"><i class="fa-solid fa-play"></i> Run code</button>
+            <button id="copy-proposed" title="Copy proposed code"><i class="fa-solid fa-copy"></i> Copy proposed</button>
+        </div>
+        <div class="suggestions" id="suggestions"></div>
+        <div class="editor" id="proposed-wrap" style="display:none; margin-top:8px;">
+            <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Proposed Code</h3>
+            <pre class="language-python" id="proposed"><code class="language-python"></code></pre>
+        </div>
+
+        <div class="editor" id="run-wrap" style="display:none; margin-top:8px;">
+            <h3><i class="fa-solid fa-terminal"></i> Run Output</h3>
+            <div class="run-meta"><span id="run-exit"></span> <span id="run-time"></span></div>
+            <h4>stdout</h4>
+            <pre id="run-stdout"></pre>
+            <h4>stderr</h4>
+            <pre id="run-stderr"></pre>
+            <div class="run-explanation" id="run-explanation"></div>
+        </div>
+    </section>
+</main>
+
+<footer class="app-footer animate__animated animate__fadeInUp">
+    <small>
+        <i class="fa-solid fa-gear"></i>Developer - Satyendra Kumar Namdeo <br>
+        
+        <div class="version" id="version"></div>
+    </small>
+</footer>
+
+<!-- Teaching Panel Popup -->
+<div class="teaching-popup animate__animated animate__fadeInUp" id="teaching-popup">
+    <button class="close-popup" onclick="document.getElementById('teaching-popup').style.display='none';">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+    <h2><i class="fa-solid fa-graduation-cap"></i> Teaching Panel</h2>
+    <div class="teaching-steps">
+        <div class="teaching-step" id="teach-step-1">
+            <i class="fa-solid fa-file-code"></i>
+            <div class="step-text"><b>Step 1:</b> Your code is uploaded and prepared for analysis.</div>
+        </div>
+        <div class="teaching-step" id="teach-step-2">
+            <i class="fa-solid fa-robot"></i>
+            <div class="step-text"><b>Step 2:</b> The server checks your code for syntax errors, style issues, and complexity.</div>
+        </div>
+        <div class="teaching-step" id="teach-step-3">
+            <i class="fa-solid fa-play"></i>
+            <div class="step-text"><b>Step 3:</b> Your code is executed in a secure, isolated environment.</div>
+        </div>
+        <div class="teaching-step" id="teach-step-4">
+            <i class="fa-solid fa-lightbulb"></i>
+            <div class="step-text"><b>Step 4:</b> AI reviews your code and explains what it does step by step.</div>
+        </div>
+        <div class="teaching-step" id="teach-step-5">
+            <i class="fa-solid fa-chart-line"></i>
+            <div class="step-text"><b>Step 5:</b> You receive the output, errors, and a step-by-step explanation!</div>
+        </div>
+    </div>
+</div>
+
+<button id="show-teaching-popup" style="position:fixed;right:2vw;bottom:2vw;z-index:99999;background:#ffb347;color:#232526;border:none;border-radius:50%;width:48px;height:48px;display:none;box-shadow:0 2px 8px #0008;cursor:pointer;">
+    <i class="fa-solid fa-graduation-cap"></i>
+</button>
+
+<script src="https://unpkg.com/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://unpkg.com/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="/static/app.js"></script>
+<script>
+    // Teaching panel step animation
+    function activateTeachingStep(step) {
+        for (let i = 1; i <= 5; i++) {
+            document.getElementById('teach-step-' + i).classList.remove('active');
+        }
+        document.getElementById('teach-step-' + step).classList.add('active');
+    }
+    // Example: activateTeachingStep(1) when code is uploaded, etc.
+    // You can call activateTeachingStep(n) in your JS logic as each backend phase completes.
+
+    // Animation for code output and explanation
+    function showRunExplanation(explanation) {
+        const el = document.getElementById('run-explanation');
+        el.innerHTML = `<b>What happened?</b><br>${explanation}`;
+        el.classList.add('animate__animated', 'animate__fadeIn');
+        activateTeachingStep(5);
+    }
+</script>
+</body>
+</html>
